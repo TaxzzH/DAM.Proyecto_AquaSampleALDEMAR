@@ -19,6 +19,12 @@ fun LoginScreen(
 ) {
     AquaTrazScreen {
 
+        /*
+        Para esta SCREEN, se podria agrupar todo dentro de una única "COLUMN"
+        para mejor organizacion.
+
+        Considerar tambien el uso de la funcion "SPACER".
+        */
         AquaTrazHeader()
 
         Column(modifier = Modifier
