@@ -19,7 +19,7 @@ se recomienda optar por una estructura Por Funcionalidad (Package-by-Feature):
     │   │   ├── HomeScreen.kt
     │   │   └── HomeViewModel.kt
     │   │
-    │   └── profile/             # <--- Integrante 3 trabaja aquí adentro
+    │   └── profile/           
     │       ├── ProfileScreen.kt
     │       └── ProfileViewModel.kt
     │
