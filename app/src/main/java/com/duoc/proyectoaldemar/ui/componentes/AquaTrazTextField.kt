@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.duoc.proyectoaldemar.ui.theme.EP2_ProyectoALDEMARTheme
 
 @Composable
 fun AquaTrazTextField(
@@ -42,6 +44,19 @@ fun AquaTrazTextField(
                 unfocusedBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
             ),
             modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AquaTrazTextFieldPreview() {
+    EP2_ProyectoALDEMARTheme {
+        AquaTrazTextField(
+            value = "ejemplo@duoc.cl",
+            onValueChange = {},
+            label = "Correo Electrónico",
+            placeholder = "usuario@empresa.com"
         )
     }
 }

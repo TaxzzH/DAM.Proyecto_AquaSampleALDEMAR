@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.duoc.proyectoaldemar.ui.theme.EP2_ProyectoALDEMARTheme
 
 @Composable
 fun AquaTrazHeader(
@@ -35,5 +37,13 @@ fun AquaTrazHeader(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AquaTrazHeaderPreview() {
+    EP2_ProyectoALDEMARTheme {
+        AquaTrazHeader()
     }
 }
