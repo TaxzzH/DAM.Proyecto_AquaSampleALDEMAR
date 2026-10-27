@@ -1,4 +1,4 @@
-package com.duoc.proyectoaldemar.ui
+package com.duoc.proyectoaldemar.ui.componentes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

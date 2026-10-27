@@ -7,11 +7,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.duoc.proyectoaldemar.model.Sesion
-import com.duoc.proyectoaldemar.ui.DetalleScreen
-import com.duoc.proyectoaldemar.ui.LoginScreen
-import com.duoc.proyectoaldemar.ui.MuestraFormScreen
-import com.duoc.proyectoaldemar.ui.MuestrasScreen
-import com.duoc.proyectoaldemar.ui.ResumenScreen
+import com.duoc.proyectoaldemar.ui.detalle.DetalleScreen
+import com.duoc.proyectoaldemar.ui.inicio.HomeScreen
+import com.duoc.proyectoaldemar.ui.login.LoginScreen
+import com.duoc.proyectoaldemar.ui.nuevamuestra.AddSampleScreen
+import com.duoc.proyectoaldemar.ui.resumen.HistoryScreen
 
 /** Rutas principales: form/0 = nueva muestra; form/5 = editar muestra #5 */
 @Composable
@@ -24,17 +24,24 @@ fun AppNavigation() {
             LoginScreen(onIngreso = { nav.navigate("muestras") { popUpTo("login") { inclusive = true } } })
         }
         composable("muestras") {
-            MuestrasScreen(
+            HomeScreen(
                 onNueva = { nav.navigate("form/0") },
                 onDetalle = { nav.navigate("detalle/$it") },
                 onResumen = { nav.navigate("resumen") },
                 onSalir = { Sesion.usuario = null; nav.navigate("login") { popUpTo(0) } }
             )
         }
-        composable("form/{id}", argId) { MuestraFormScreen(onVolver = { nav.popBackStack() }) }
+        composable("form/{id}", argId) {
+            AddSampleScreen(onVolver = { nav.popBackStack() })
+        }
         composable("detalle/{id}", argId) {
             DetalleScreen(onVolver = { nav.popBackStack() }, onEditar = { nav.navigate("form/$it") })
         }
-        composable("resumen") { ResumenScreen(onVolver = { nav.popBackStack() }) }
+        composable("resumen") {
+            HistoryScreen(
+                onVolver = { nav.popBackStack() },
+                onDetalle = { nav.navigate("detalle/$it") }
+            )
+        }
     }
 }
