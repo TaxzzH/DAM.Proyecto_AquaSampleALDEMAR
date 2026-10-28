@@ -1,8 +1,14 @@
 package com.duoc.proyectoaldemar.ui.componentes
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,33 +22,18 @@ fun AquaTrazScreen(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        // 1. Línea decorativa superior
-        HorizontalDivider(
-            thickness = 3.dp,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        // 2. Contenido interno de cada pantalla
         Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             content = content
-        )
-
-        // 3. Línea decorativa inferior
-        HorizontalDivider(
-            thickness = 3.dp,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }
