@@ -44,6 +44,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    // Insforge
+    implementation("dev.insforge:insforge-kotlin:0.1.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
     // Icons & Lifecycle
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.lifecycle.viewmodel.compose)

@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.duoc.proyectoaldemar.model.Sesion
+import com.duoc.proyectoaldemar.ui.admin.AdminUsersScreen
 import com.duoc.proyectoaldemar.ui.detalle.DetalleScreen
 import com.duoc.proyectoaldemar.ui.inicio.HomeScreen
 import com.duoc.proyectoaldemar.ui.login.LoginScreen
@@ -28,8 +29,12 @@ fun AppNavigation() {
                 onNueva = { nav.navigate("form/0") },
                 onDetalle = { nav.navigate("detalle/$it") },
                 onResumen = { nav.navigate("resumen") },
+                onGestionUsuarios = { nav.navigate("admin_usuarios") },
                 onSalir = { Sesion.usuario = null; nav.navigate("login") { popUpTo(0) } }
             )
+        }
+        composable("admin_usuarios") {
+            AdminUsersScreen(onVolver = { nav.popBackStack() })
         }
         composable("form/{id}", argId) {
             AddSampleScreen(onVolver = { nav.popBackStack() })

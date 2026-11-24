@@ -26,6 +26,8 @@ object Reglas {
         Rol.OPERADOR -> m.operador == u.codigo
         Rol.SUPERVISOR -> m.estado != Estado.BORRADOR
         Rol.ANALISTA -> m.estado == Estado.VALIDADO
+        Rol.ADMINISTRADOR_ACADEMICO -> true // El administrador académico puede auditar todas las muestras
+        Rol.EN_ESPERA -> false // Usuarios en espera no tienen acceso a ver muestras
     }
 
     /** Individuos de choritos por metro de cuerda */
