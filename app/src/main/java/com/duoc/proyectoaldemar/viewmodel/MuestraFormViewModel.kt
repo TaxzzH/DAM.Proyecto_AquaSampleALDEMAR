@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 class MuestraFormViewModel(app: Application, handle: SavedStateHandle) : AndroidViewModel(app) {
     private val repo = (app as AquaSampleApp).repo
 
-    var f by mutableStateOf(Formulario(operador = Sesion.usuario!!.codigo))
+    var f by mutableStateOf(Formulario(operador = Sesion.usuario?.codigo ?: ""))
         private set
     var errores by mutableStateOf<Map<String, String>>(emptyMap())
         private set
@@ -38,6 +38,10 @@ class MuestraFormViewModel(app: Application, handle: SavedStateHandle) : Android
 
     /** enviar = false guarda borrador; enviar = true exige datos completos y fotografía. */
     fun guardar(enviar: Boolean) {
+        if (Sesion.usuario == null) {
+            errores = mapOf("general" to "Sesión no válida. Inicia sesión nuevamente.")
+            return
+        }
         errores = Validador.validar(f, enviar)
         if (errores.isNotEmpty()) return
         val estado = if (enviar) Reglas.estadoAlEnviar(f.estado) else f.estado

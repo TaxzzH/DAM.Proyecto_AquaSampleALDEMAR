@@ -1,16 +1,17 @@
 package com.duoc.proyectoaldemar.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    object Home : Screen("home")
-    object AddSample : Screen("add_sample")
-    object History : Screen("history")
+    object Home : Screen("muestras")
+    object AddSample : Screen("form/0")
+    object History : Screen("resumen")
+    object AdminUsers : Screen("admin_usuarios")
 }
 
 sealed class BottomNavItem(
@@ -33,6 +34,6 @@ sealed class BottomNavItem(
     object History : BottomNavItem(
         route = Screen.History.route,
         title = "Historial",
-        icon = Icons.Default.List
+        icon = Icons.AutoMirrored.Filled.List
     )
 }

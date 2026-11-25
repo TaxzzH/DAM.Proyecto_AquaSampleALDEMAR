@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 /** Indicadores de resumen y sincronización con la API remota. */
 class ResumenViewModel(app: Application) : AndroidViewModel(app) {
     private val repo = (app as AquaSampleApp).repo
-    private val usuario = Sesion.usuario!!
 
     var lista by mutableStateOf(emptyList<Muestra>())
         private set
@@ -28,17 +27,28 @@ class ResumenViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         viewModelScope.launch {
-            repo.todas().collect { todas -> lista = todas.filter { Reglas.esVisible(usuario, it) } }
+            repo.todas().collect { todas ->
+                val u = Sesion.usuario
+                lista = if (u != null) {
+                    todas.filter { Reglas.esVisible(u, it) }
+                } else {
+                    emptyList()
+                }
+            }
         }
     }
 
     /** Maneja la sincronización de muestras validadas hacia la API. */
     fun sincronizar() {
+        if (Sesion.usuario == null) {
+            mensaje = "Sesión no válida. Inicia sesión nuevamente."
+            return
+        }
         viewModelScope.launch {
             cargando = true
             mensaje = try {
                 "Sincronizadas: ${repo.sincronizar()}"
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 "No se pudo sincronizar. Revisa tu conexión."
             }
             cargando = false
