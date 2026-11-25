@@ -9,6 +9,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.duoc.proyectoaldemar.AquaSampleApp
 import com.duoc.proyectoaldemar.model.Estado
+import com.duoc.proyectoaldemar.model.MarcaConteo
 import com.duoc.proyectoaldemar.model.Muestra
 import com.duoc.proyectoaldemar.util.Validador
 import kotlinx.coroutines.launch
@@ -19,11 +20,20 @@ class DetalleViewModel(app: Application, handle: SavedStateHandle) : AndroidView
 
     var muestra by mutableStateOf<Muestra?>(null)
         private set
+    var marcas by mutableStateOf<List<MarcaConteo>>(emptyList())
+        private set
     var errorComentario by mutableStateOf(false)
         private set
 
     init {
-        viewModelScope.launch { repo.observar(handle.get<Long>("id")!!).collect { muestra = it } }
+        viewModelScope.launch {
+            repo.observar(handle.get<Long>("id")!!).collect { m ->
+                muestra = m
+                if (m != null) {
+                    marcas = repo.obtenerMarcas(m.uuid)
+                }
+            }
+        }
     }
 
     fun validar() = cambiarEstado(Estado.VALIDADO, "")

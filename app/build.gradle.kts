@@ -70,6 +70,11 @@ dependencies {
     // Coil (Carga de fotografías)
     implementation(libs.coil.compose)
 
+    // CameraX (Captura de fotografías integrada)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
     // Pruebas
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

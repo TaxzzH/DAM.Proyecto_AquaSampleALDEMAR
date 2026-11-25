@@ -11,9 +11,13 @@ import com.duoc.proyectoaldemar.data.worker.SyncWorker
 class AquaSampleApp : Application() {
     val repo by lazy {
         val db = Room.databaseBuilder(this, AppDatabase::class.java, "aquasample.db")
-            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
             .build()
-        MuestraRepository(db.muestraDao(), crearSyncApi())
+        MuestraRepository(
+            dao = db.muestraDao(),
+            api = crearSyncApi(),
+            marcaDao = db.marcaConteoDao()
+        )
     }
 
     override fun onCreate() {

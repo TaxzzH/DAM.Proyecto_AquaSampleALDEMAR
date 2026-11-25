@@ -10,10 +10,12 @@ import androidx.lifecycle.viewModelScope
 import com.duoc.proyectoaldemar.AquaSampleApp
 import com.duoc.proyectoaldemar.data.worker.SyncWorker
 import com.duoc.proyectoaldemar.model.Formulario
+import com.duoc.proyectoaldemar.model.MarcaConteo
 import com.duoc.proyectoaldemar.model.Sesion
 import com.duoc.proyectoaldemar.util.Reglas
 import com.duoc.proyectoaldemar.util.Validador
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 /** Formulario de muestra. El id llega mediante SavedStateHandle (0 = nueva muestra). */
 class MuestraFormViewModel(app: Application, handle: SavedStateHandle) : AndroidViewModel(app) {
@@ -25,16 +27,35 @@ class MuestraFormViewModel(app: Application, handle: SavedStateHandle) : Android
         private set
     var guardado by mutableStateOf(false)
         private set
+    var marcas by mutableStateOf<List<MarcaConteo>>(emptyList())
+        private set
 
     init {
         val id = handle.get<Long>("id") ?: 0L
-        if (id != 0L) viewModelScope.launch { repo.obtener(id)?.let { f = Formulario.desde(it) } }
+        if (id != 0L) {
+            viewModelScope.launch {
+                repo.obtener(id)?.let { muestra ->
+                    f = Formulario.desde(muestra)
+                    marcas = repo.obtenerMarcas(muestra.uuid)
+                }
+            }
+        } else {
+            if (f.uuid.isBlank()) {
+                f = f.copy(uuid = UUID.randomUUID().toString())
+            }
+        }
     }
 
     fun editar(nuevo: Formulario) { f = nuevo }
 
     fun sumarConteo(delta: Int) {
         f = f.copy(conteo = ((f.conteo.toIntOrNull() ?: 0) + delta).coerceIn(0, 5000).toString())
+    }
+
+    fun actualizarMarcas(nuevasMarcas: List<MarcaConteo>, nuevoConteo: Int? = null) {
+        marcas = nuevasMarcas
+        val total = nuevoConteo ?: nuevasMarcas.size
+        f = f.copy(conteo = total.toString())
     }
 
     /** enviar = false guarda borrador; enviar = true exige datos completos y fotografía. */
@@ -47,7 +68,9 @@ class MuestraFormViewModel(app: Application, handle: SavedStateHandle) : Android
         if (errores.isNotEmpty()) return
         val estado = if (enviar) Reglas.estadoAlEnviar(f.estado) else f.estado
         viewModelScope.launch {
-            repo.guardar(f.aMuestra(estado))
+            val muestra = f.aMuestra(estado)
+            repo.guardar(muestra)
+            repo.guardarMarcas(muestra.uuid, marcas)
             if (enviar) {
                 SyncWorker.programarSincronizacion(getApplication())
             }

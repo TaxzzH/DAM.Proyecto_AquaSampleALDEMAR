@@ -1,5 +1,7 @@
 package com.duoc.proyectoaldemar.ui.nuevamuestra
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -21,21 +25,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.duoc.proyectoaldemar.model.DatosDemo
 import com.duoc.proyectoaldemar.model.Estado
-import com.duoc.proyectoaldemar.ui.componentes.Campo
-import com.duoc.proyectoaldemar.ui.componentes.Selector
 import com.duoc.proyectoaldemar.ui.componentes.AquaTrazButton
 import com.duoc.proyectoaldemar.ui.componentes.AquaTrazHeader
 import com.duoc.proyectoaldemar.ui.componentes.AquaTrazScreen
+import com.duoc.proyectoaldemar.ui.componentes.Campo
+import com.duoc.proyectoaldemar.ui.componentes.Selector
 import com.duoc.proyectoaldemar.ui.theme.EP2_ProyectoALDEMARTheme
 import com.duoc.proyectoaldemar.util.Fotos
 import com.duoc.proyectoaldemar.viewmodel.MuestraFormViewModel
@@ -56,110 +62,177 @@ fun AddSampleScreen(
         if (vm.guardado) handleVolver()
     }
 
-    var pendiente by rememberSaveable { mutableStateOf<String?>(null) }
-    val camara = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
-        if (ok) vm.editar(f.copy(fotoPath = pendiente))
+    var mostrarCamara by rememberSaveable { mutableStateOf(false) }
+    var mostrarConteoAsistido by rememberSaveable { mutableStateOf(false) }
+    var mensajePermiso by rememberSaveable { mutableStateOf<String?>(null) }
+
+    val permisoCamaraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            mensajePermiso = null
+            mostrarCamara = true
+        } else {
+            mensajePermiso = "Se requiere permiso de cámara para tomar fotografías."
+        }
     }
+
     val galeria = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) vm.editar(f.copy(fotoPath = Fotos.copiarDesdeGaleria(context, uri).absolutePath))
     }
 
-    AquaTrazScreen {
-        AquaTrazHeader()
+    val fotoActual = f.fotoPath
 
-        Spacer(modifier = Modifier.height(12.dp))
+    if (mostrarCamara) {
+        CameraCaptureScreen(
+            onFotoCapturada = { rutaFoto ->
+                vm.editar(f.copy(fotoPath = rutaFoto))
+                mostrarCamara = false
+            },
+            onCancelar = {
+                mostrarCamara = false
+            }
+        )
+    } else if (mostrarConteoAsistido && fotoActual != null) {
+        ConteoAsistidoScreen(
+            fotoPath = fotoActual,
+            muestraUuid = f.uuid,
+            marcasIniciales = vm.marcas,
+            conteoInicial = f.conteo.toIntOrNull() ?: 0,
+            onGuardarConteo = { nuevasMarcas, nuevoTotal ->
+                vm.actualizarMarcas(nuevasMarcas, nuevoTotal)
+                mostrarConteoAsistido = false
+            },
+            onCancelar = {
+                mostrarConteoAsistido = false
+            }
+        )
+    } else {
+        AquaTrazScreen {
+            AquaTrazHeader()
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = if (f.id == 0L) "Nueva Muestra de Choritos" else "Editar Muestra #${f.id}",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Spacer(modifier = Modifier.height(12.dp))
 
-            if (f.estado == Estado.OBSERVADO) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 Text(
-                    text = "Observación del supervisor: ${f.comentarioSupervisor}",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = if (f.id == 0L) "Nueva Muestra de Choritos" else "Editar Muestra #${f.id}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
-            }
 
-            Selector("Centro", f.centro, DatosDemo.centros, e["centro"]) { vm.editar(f.copy(centro = it)) }
-            Selector("Tren", f.tren, DatosDemo.trenes, e["tren"]) { vm.editar(f.copy(tren = it)) }
-            Selector("Línea", f.linea, DatosDemo.lineas, e["linea"]) { vm.editar(f.copy(linea = it)) }
+                if (f.estado == Estado.OBSERVADO) {
+                    Text(
+                        text = "Observación del supervisor: ${f.comentarioSupervisor}",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
-            Campo("Tramo (cm)", f.tramo, e["tramo"], teclado = KeyboardType.Number) { vm.editar(f.copy(tramo = it)) }
-            Campo("Conteo de individuos", f.conteo, e["conteo"], teclado = KeyboardType.Number) { vm.editar(f.copy(conteo = it)) }
+                Selector("Centro", f.centro, DatosDemo.centros, e["centro"]) { vm.editar(f.copy(centro = it)) }
+                Selector("Tren", f.tren, DatosDemo.trenes, e["tren"]) { vm.editar(f.copy(tren = it)) }
+                Selector("Línea", f.linea, DatosDemo.lineas, e["linea"]) { vm.editar(f.copy(linea = it)) }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { vm.sumarConteo(1) }) { Text("+1") }
-                OutlinedButton(onClick = { vm.sumarConteo(10) }) { Text("+10") }
-            }
+                Campo("Tramo (cm)", f.tramo, e["tramo"], teclado = KeyboardType.Number) { vm.editar(f.copy(tramo = it)) }
+                Campo("Conteo de individuos", f.conteo, e["conteo"], teclado = KeyboardType.Number) { vm.editar(f.copy(conteo = it)) }
 
-            Campo("Calibre mm (opcional)", f.calibre, e["calibre"], teclado = KeyboardType.Decimal) { vm.editar(f.copy(calibre = it)) }
-            Campo("Observaciones", f.observaciones, e["observaciones"]) { vm.editar(f.copy(observaciones = it)) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { vm.sumarConteo(1) }) { Text("+1") }
+                    OutlinedButton(onClick = { vm.sumarConteo(10) }) { Text("+10") }
+                }
 
-            Text(
-                text = "Fotografía de Muestra",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold
-            )
+                Campo("Calibre mm (opcional)", f.calibre, e["calibre"], teclado = KeyboardType.Decimal) { vm.editar(f.copy(calibre = it)) }
+                Campo("Observaciones", f.observaciones, e["observaciones"]) { vm.editar(f.copy(observaciones = it)) }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = {
-                    val archivo = Fotos.nuevoArchivo(context)
-                    pendiente = archivo.absolutePath
-                    camara.launch(Fotos.uriPara(context, archivo))
-                }) { Text("Tomar Foto (Cámara)") }
+                Text(
+                    text = "Fotografía de Muestra",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
 
-                OutlinedButton(onClick = {
-                    galeria.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                }) { Text("Galería") }
-            }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = {
+                        val tienePermiso = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
 
-            f.fotoPath?.let {
-                AsyncImage(
-                    model = File(it),
-                    contentDescription = "Foto de la muestra",
+                        if (tienePermiso) {
+                            mensajePermiso = null
+                            mostrarCamara = true
+                        } else {
+                            permisoCamaraLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    }) { Text("Tomar Foto (Cámara)") }
+
+                    OutlinedButton(onClick = {
+                        galeria.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }) { Text("Galería") }
+                }
+
+                mensajePermiso?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+
+                f.fotoPath?.let { path ->
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        AsyncImage(
+                            model = File(path),
+                            contentDescription = "Foto de la muestra",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Button(
+                            onClick = { mostrarConteoAsistido = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0077B6)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Conteo Asistido sobre Foto (${vm.marcas.size} marcas | Total: ${f.conteo})")
+                        }
+
+                        Text(
+                            text = "• Marcas visuales: ${vm.marcas.size} · Conteo final: ${f.conteo}\n(Pendiente de guardar con la muestra)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                e["foto"]?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AquaTrazButton(
+                    text = "Enviar a Revisión",
+                    onClick = { vm.guardar(enviar = true) }
+                )
+
+                OutlinedButton(
+                    onClick = { vm.guardar(enviar = false) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
+                        .height(50.dp)
+                ) {
+                    Text("Guardar Borrador")
+                }
 
-            e["foto"]?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AquaTrazButton(
-                text = "Enviar a Revisión",
-                onClick = { vm.guardar(enviar = true) }
-            )
-
-            OutlinedButton(
-                onClick = { vm.guardar(enviar = false) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text("Guardar Borrador")
-            }
-
-            OutlinedButton(
-                onClick = handleVolver,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text("Cancelar")
+                OutlinedButton(
+                    onClick = handleVolver,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text("Cancelar")
+                }
             }
         }
     }

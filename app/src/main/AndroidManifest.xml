@@ -4,6 +4,8 @@
 
     <!-- Permiso para sincronizar con la API ficticia -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Permiso para capturar fotografías con CameraX -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- Permite el uso de la app de cámara del sistema -->
     <uses-feature
