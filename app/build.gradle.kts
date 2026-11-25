@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // WorkManager (Sincronización en segundo plano)
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Retrofit (Sincronización API)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
+import com.duoc.proyectoaldemar.model.EstadoSincronizacion
 import com.duoc.proyectoaldemar.model.Muestra
 import kotlinx.coroutines.flow.Flow
 
@@ -18,8 +19,12 @@ interface MuestraDao {
     @Query("SELECT * FROM muestras WHERE id = :id")
     suspend fun obtener(id: Long): Muestra?
 
-    @Query("SELECT * FROM muestras WHERE estado = 'VALIDADO' AND sincronizada = 0")
+    /** Devuelve las muestras que no son borrador y faltan por sincronizar exitosamente. */
+    @Query("SELECT * FROM muestras WHERE estado != 'BORRADOR' AND estadoSincronizacion != 'SINCRONIZADA'")
     suspend fun porSincronizar(): List<Muestra>
+
+    @Query("UPDATE muestras SET estadoSincronizacion = :estadoSinc, sincronizada = :sincronizada WHERE uuid = :uuid")
+    suspend fun actualizarEstadoSincronizacion(uuid: String, estadoSinc: EstadoSincronizacion, sincronizada: Boolean)
 
     /** Inserta si id = 0, actualiza si ya existe. */
     @Upsert

@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.duoc.proyectoaldemar.AquaSampleApp
+import com.duoc.proyectoaldemar.data.worker.SyncWorker
 import com.duoc.proyectoaldemar.model.Formulario
 import com.duoc.proyectoaldemar.model.Sesion
 import com.duoc.proyectoaldemar.util.Reglas
@@ -47,6 +48,9 @@ class MuestraFormViewModel(app: Application, handle: SavedStateHandle) : Android
         val estado = if (enviar) Reglas.estadoAlEnviar(f.estado) else f.estado
         viewModelScope.launch {
             repo.guardar(f.aMuestra(estado))
+            if (enviar) {
+                SyncWorker.programarSincronizacion(getApplication())
+            }
             guardado = true
         }
     }

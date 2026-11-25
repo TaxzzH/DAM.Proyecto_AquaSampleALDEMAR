@@ -3,6 +3,7 @@ package com.duoc.proyectoaldemar.data
 import dev.insforge.auth.Auth
 import dev.insforge.createInsforgeClient
 import dev.insforge.database.Database
+import dev.insforge.storage.Storage
 
 object InsforgeProvider {
     val client = createInsforgeClient(
@@ -11,5 +12,6 @@ object InsforgeProvider {
     ) {
         install(Auth)
         install(Database)
+        install(Storage)
     }
 }

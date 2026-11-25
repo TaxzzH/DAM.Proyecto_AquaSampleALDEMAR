@@ -1,8 +1,11 @@
 package com.duoc.proyectoaldemar.model
 
+import java.util.UUID
+
 /** Lo que el usuario escribe en la pantalla. Todo es texto para poder validarlo antes de convertirlo. */
 data class Formulario(
     val id: Long = 0,
+    val uuid: String = "",
     val fechaHora: Long = System.currentTimeMillis(),
     val operador: String = "",
     val centro: String = "",
@@ -14,10 +17,12 @@ data class Formulario(
     val observaciones: String = "",
     val fotoPath: String? = null,
     val estado: Estado = Estado.BORRADOR,
-    val comentarioSupervisor: String = ""
+    val comentarioSupervisor: String = "",
+    val estadoSincronizacion: EstadoSincronizacion = EstadoSincronizacion.PENDIENTE
 ) {
     fun aMuestra(estado: Estado) = Muestra(
         id = id,
+        uuid = uuid.ifBlank { UUID.randomUUID().toString() },
         fechaHora = fechaHora,
         centro = centro,
         tren = tren,
@@ -29,12 +34,14 @@ data class Formulario(
         fotoPath = fotoPath,
         observaciones = observaciones.trim(),
         estado = estado,
-        comentarioSupervisor = comentarioSupervisor
+        comentarioSupervisor = comentarioSupervisor,
+        estadoSincronizacion = if (estado == Estado.BORRADOR) EstadoSincronizacion.PENDIENTE else estadoSincronizacion
     )
 
     companion object {
         fun desde(m: Muestra) = Formulario(
             id = m.id,
+            uuid = m.uuid,
             fechaHora = m.fechaHora,
             operador = m.operador,
             centro = m.centro,
@@ -46,7 +53,8 @@ data class Formulario(
             observaciones = m.observaciones,
             fotoPath = m.fotoPath,
             estado = m.estado,
-            comentarioSupervisor = m.comentarioSupervisor
+            comentarioSupervisor = m.comentarioSupervisor,
+            estadoSincronizacion = m.estadoSincronizacion
         )
     }
 }
